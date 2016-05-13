@@ -4,10 +4,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.sql.*;
 import java.util.ArrayList;
 
 import static org.junit.Assert.*;
@@ -93,15 +90,22 @@ public class ToDoDatabaseTest {
     @Test
     public void testToggleToDo() throws Exception {
         Connection conn = DriverManager.getConnection("jdbc:h2:./main");
-        Integer firstId = 0;
-        Integer secondId = 1;
+        String todoText = "UnitTest-ToDo";
+        todoDatabase.insertToDo(conn, todoText);
 
-        todoDatabase.selectToDos(conn);
-
-        
-
+        ArrayList<ToDoItem> items = new ArrayList<>();
+        Statement stmt = conn.createStatement();
+        ResultSet results = stmt.executeQuery("SELECT * FROM todos");
+        while (results.next()) {
+            int id = results.getInt("id");
+            String text = results.getString("text");
+            boolean isDone = results.getBoolean("is_done");
+            todoDatabase.toggleToDo(conn, id);
+            System.out.println("is_done:" + results.getString("is_done"));
+            boolean expectedValue = !results.getBoolean("is_done");
+            assertNotEquals(expectedValue, results.getBoolean("is_done"));
 
         }
     }
-
 }
+
